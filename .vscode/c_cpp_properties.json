@@ -1,0 +1,26 @@
+{
+    "configurations": [
+        {
+            "name": "ATSAM4S",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "ATSAM4_OTA/src/**",
+                "ATSAM4_OTA/src/ASF/**",
+                "ATSAM4_OTA/src/config/**"
+            ],
+            "defines": [
+                "UNICODE"
+            ],
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "gcc-arm",
+            "compilerPath": "D:\\3.TOOLS\\ARM_GCC_TOOLCHAIN\\BIN\\ARM-NONE-EABI-GCC.EXE",
+            "compilerArgs": [
+                "-mcpu=cortex-m4",
+                "-mthumb"
+            ],
+            "configurationProvider": "ms-vscode.makefile-tools"
+        }
+    ],
+    "version": 4
+}

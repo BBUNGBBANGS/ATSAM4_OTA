@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "string.h": "c",
+        "asf.h": "c",
+        "conf_uart_serial.h": "c",
+        "usart.h": "c"
+    }
+}
