@@ -36,18 +36,17 @@ void xmodem_receive(void)
         uart_status comm_status = uart_receive(&header, 1u);
 
         /* Spam the host (until we receive something) with ACSII "C", to notify it, we want to use CRC-16. */
-        if ((UART_OK != comm_status) && (false == x_first_packet_received))
+        if (x_first_packet_received == false)
         {
             (void)uart_transmit_ch(X_C);
-        }
-        /* Uart timeout or any other errors. */
-        else if ((UART_OK != comm_status) && (true == x_first_packet_received))
-        {
-            status = xmodem_error_handler(&error_number, X_MAX_ERRORS);
+            delay_ms(10);
         }
         else
         {
-            /* Do nothing. */
+            if ((header == X_SOH) || (header == X_STX))
+            {
+                x_first_packet_received = true;
+            }
         }
 
         /* The header can be: SOH, STX, EOT and CAN. */
