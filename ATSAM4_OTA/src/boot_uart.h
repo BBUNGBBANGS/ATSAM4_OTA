@@ -1,5 +1,5 @@
-#ifndef _UART_H
-#define _UART_H
+#ifndef _BOOT_UART_H
+#define _BOOT_UART_H
 
 #include "conf_uart_serial.h"
 
@@ -8,7 +8,7 @@ typedef enum
 {
     UART_OK     = 0x00u, /**< The action was successful. */
     UART_ERROR  = 0xFFu  /**< Generic error. */
-} uart_status;
+} Uart_Status_t;
 
 typedef struct 
 {
@@ -24,16 +24,14 @@ typedef enum
     UART_PACKET_NUM,
     UART_PACKET_DATA,
     UART_PACKET_CHECKSUM,
-} Uart_Packet_Index;
+} Uart_Packet_Index_t;
 
 extern Uart_Packet_t Uart_Packet;
-extern uint8_t Uart_Buffer[2048];
 extern uint16_t Uart_Buffer_Length;
 extern uint8_t Uart_Packet_Received_Flag;
 
 extern void Boot_Uart_Init(void);
-extern uart_status uart_transmit_str(uint8_t *data);
-extern uart_status uart_transmit_ch(uint8_t data);
-extern uart_status uart_receive(uint8_t *data, uint16_t length);
-extern uart_status Uart_Packet_Receive(uint8_t *data, Uart_Packet_Index index);
+extern Uart_Status_t Uart_Transmit(uint8_t data);
+extern Uart_Status_t Uart_Transmit_Str(uint8_t *data);
+extern Uart_Status_t Uart_Packet_Receive(uint8_t *data, Uart_Packet_Index_t index);
 #endif

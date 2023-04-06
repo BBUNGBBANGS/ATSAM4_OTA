@@ -1,12 +1,10 @@
 #include "main.h"
 #include "boot_uart.h"
 
-uint8_t Uart_Buffer[2048];
+volatile Uart_Rx_Buf[2048];
 Uart_Packet_t Uart_Packet;
 uint16_t Uart_Buffer_Length;
 uint8_t Uart_Packet_Received_Flag;
-
-static void Uart_Packet_Parsing(uint8_t data);
 
 void Boot_Uart_Init(void)
 {
@@ -24,22 +22,15 @@ void Boot_Uart_Init(void)
 	usart_enable_interrupt(UART1, US_IER_RXRDY); // UART RX 인터럽트 활성화
     NVIC_EnableIRQ(UART1_IRQn); // 전체 인터럽트 활성화
 }
-	const usart_serial_options_t uart_serial_options = 
-	{
-		.baudrate =		CONF_UART_BAUDRATE,
-		.charlength =	CONF_UART_CHAR_LENGTH,
-		.paritytype =	CONF_UART_PARITY,
-		.stopbits =		CONF_UART_STOP_BITS,
-	};
 
 /**
  * @brief   Transmits a single char to UART.
  * @param   *data: The char.
  * @return  status: Report about the success of the transmission.
  */
-uart_status uart_transmit_ch(uint8_t data)
+Uart_Status_t Uart_Transmit(uint8_t data)
 {
-	uart_status status = UART_ERROR;
+	Uart_Status_t status = UART_ERROR;
 
 	if(uart_write(UART1,data) == 0)
 	{
@@ -54,14 +45,17 @@ uart_status uart_transmit_ch(uint8_t data)
  * @param   *data: Array of the data.
  * @return  status: Report about the success of the transmission.
  */
-uart_status uart_transmit_str(uint8_t *data)
+Uart_Status_t Uart_Transmit_Str(uint8_t *data)
 {
-	uart_status status = UART_ERROR;
+	Uart_Status_t status = UART_ERROR;
+	uint16_t length = (uint16_t)strlen((char *)data);
 
 	/* Calculate the length. */
-	for(uint16_t i = 0; i < strlen(data); i++)
+	for(uint16_t i = 0; i < length; i++)
 	{
-		if (UART_ERROR == uart_transmit_ch(*(data+i)))
+		status = Uart_Transmit(*(data+i));
+		delay_us(100);
+		if (status == UART_ERROR)
 		{
 			return status;
 		}
@@ -71,35 +65,10 @@ uart_status uart_transmit_str(uint8_t *data)
 
 	return status;
 }
-/**
- * @brief   Receives data from UART.
- * @param   *data: Array to save the received data.
- * @param   length:  Size of the data.
- * @return  status: Report about the success of the receiving.
- */
-uart_status uart_receive(uint8_t *data, uint16_t length)
+
+Uart_Status_t Uart_Packet_Receive(uint8_t *data, Uart_Packet_Index_t index)
 {
-	uart_status status = UART_ERROR;
-
-	if(Uart_Buffer_Length > 0)
-	{
-		for(uint16_t i = 0; i < length; i++)
-		{
-			*(data+i) = Uart_Buffer[i];
-		}
-		status = UART_OK;
-	}
-	else
-	{
-		status = UART_ERROR;
-	}
-
-	return status;
-}
-
-uart_status Uart_Packet_Receive(uint8_t *data, Uart_Packet_Index index)
-{
-	uart_status status = UART_ERROR;
+	Uart_Status_t status = UART_ERROR;
 	if ((Uart_Buffer_Length > 0) || (Uart_Packet_Received_Flag == 1))
 	{
 		switch(index)
@@ -134,24 +103,25 @@ uart_status Uart_Packet_Receive(uint8_t *data, Uart_Packet_Index index)
 
 void UART1_Handler(void)
 {
+	uint8_t rx_data = 0;
     if (usart_get_interrupt_mask(UART1) & US_IER_RXRDY) 
 	{
-        usart_getchar(UART1,(uint32_t *)&Uart_Buffer[Uart_Buffer_Length]); 
+        usart_getchar(UART1,(uint32_t *)&Uart_Rx_Buf[Uart_Buffer_Length]); 
 		if (Uart_Buffer_Length < 1)
 		{
-			Uart_Packet.header = Uart_Buffer[Uart_Buffer_Length];
+			Uart_Packet.header = Uart_Rx_Buf[Uart_Buffer_Length];
 		}
 		else if (Uart_Buffer_Length < 3)
 		{
-			Uart_Packet.packet_num[Uart_Buffer_Length - 1] = Uart_Buffer[Uart_Buffer_Length];
+			Uart_Packet.packet_num[Uart_Buffer_Length - 1] = Uart_Rx_Buf[Uart_Buffer_Length];
 		}
 		else if (Uart_Buffer_Length < 1027)
 		{
-			Uart_Packet.data[Uart_Buffer_Length - 3] = Uart_Buffer[Uart_Buffer_Length];
+			Uart_Packet.data[Uart_Buffer_Length - 3] = Uart_Rx_Buf[Uart_Buffer_Length];
 		}
 		else if (Uart_Buffer_Length < 1029)
 		{
-			Uart_Packet.checksum[Uart_Buffer_Length - 1027] = Uart_Buffer[Uart_Buffer_Length];
+			Uart_Packet.checksum[Uart_Buffer_Length - 1027] = Uart_Rx_Buf[Uart_Buffer_Length];
 		}
 		
 		if(Uart_Buffer_Length >= 1028)

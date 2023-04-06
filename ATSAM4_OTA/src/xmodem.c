@@ -33,8 +33,7 @@ void xmodem_receive(void)
         uint8_t header = 0x00u;
 
         /* Get the header from UART. */
-        //uart_status comm_status = uart_receive(&header, 1u);
-		uart_status comm_status = Uart_Packet_Receive(&header, UART_PACKET_HEADER);
+		Uart_Status_t comm_status = Uart_Packet_Receive(&header, UART_PACKET_HEADER);
         if ((header == X_SOH) || (header == X_STX))
         {
             x_first_packet_received = true;
@@ -42,7 +41,7 @@ void xmodem_receive(void)
         /* Spam the host (until we receive something) with ACSII "C", to notify it, we want to use CRC-16. */
         if (x_first_packet_received == false)
         {
-            (void)uart_transmit_ch(X_C);
+            (void)Uart_Transmit(X_C);
             delay_ms(10);
         }
 		
@@ -59,7 +58,7 @@ void xmodem_receive(void)
                     packet_status = xmodem_handle_packet(header);
                     if (X_OK == packet_status)
                     {
-                        (void)uart_transmit_ch(X_ACK);
+                        (void)Uart_Transmit(X_ACK);
                     }
                     /* If the error was flash related, then immediately set the error counter to max (graceful abort). */
                     else if (X_ERROR_FLASH == packet_status)
@@ -77,10 +76,10 @@ void xmodem_receive(void)
             /* End of Transmission. */
             case X_EOT:
                 /* ACK, feedback to user (as a text), then jump to user application. */
-                (void)uart_transmit_ch(X_ACK);
-                (void)uart_transmit_str((uint8_t*)"\n\rFirmware updated!\n\r");
-                (void)uart_transmit_str((uint8_t*)"Jumping to user application...\n\r");
-                //flash_jump_to_app();
+                (void)Uart_Transmit(X_ACK);
+                (void)Uart_Transmit_Str((uint8_t*)"\n\rFirmware updated!\r\n");
+                (void)Uart_Transmit_Str((uint8_t*)"Jumping to user application...\r\n");
+                //Jump_To_Application();
             break;
             /* Abort from host. */
             case X_CAN:
@@ -149,7 +148,7 @@ static xmodem_status xmodem_handle_packet(uint8_t header)
         status |= X_ERROR;
     }
 
-    uart_status comm_status = UART_OK;
+    Uart_Status_t comm_status = UART_OK;
     /* Get the packet number, data and CRC from UART. */
     comm_status |= Uart_Packet_Receive(&received_packet_number[0u], UART_PACKET_NUM);
     comm_status |= Uart_Packet_Receive(&received_packet_data[0u], UART_PACKET_DATA);
@@ -235,14 +234,14 @@ static xmodem_status xmodem_error_handler(uint8_t *error_number, uint8_t max_err
     if ((*error_number) >= max_error_number)
     {
         /* Graceful abort. */
-        (void)uart_transmit_ch(X_CAN);
-        (void)uart_transmit_ch(X_CAN);
+        (void)Uart_Transmit(X_CAN);
+        (void)Uart_Transmit(X_CAN);
         status = X_ERROR;
     }
     /* Otherwise send a NAK for a repeat. */
     else
     {
-        (void)uart_transmit_ch(X_NAK);
+        (void)Uart_Transmit(X_NAK);
         status = X_OK;
     }
     return status;
