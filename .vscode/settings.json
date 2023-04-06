@@ -3,6 +3,9 @@
         "string.h": "c",
         "asf.h": "c",
         "conf_uart_serial.h": "c",
-        "usart.h": "c"
+        "usart.h": "c",
+        "flash.h": "c",
+        "uart.h": "c",
+        "boot_uart.h": "c"
     }
 }

@@ -2,6 +2,10 @@
 # Automatically-generated file. Do not edit or delete the file
 ################################################################################
 
+src\boot_uart.c
+
+src\xmodem.c
+
 src\ASF\common\components\wifi\winc1500\host_drv\bsp\source\nm_bsp_sam4s.c
 
 src\ASF\common\components\wifi\winc1500\host_drv\bus_wrapper\source\nm_bus_wrapper_sam4s.c
@@ -77,6 +81,8 @@ src\ASF\sam\utils\cmsis\sam4s\source\templates\gcc\startup_sam4s.c
 src\ASF\sam\utils\cmsis\sam4s\source\templates\system_sam4s.c
 
 src\ASF\sam\utils\syscalls\gcc\syscalls.c
+
+src\flash.c
 
 src\main.c
 
