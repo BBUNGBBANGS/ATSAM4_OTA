@@ -81,7 +81,7 @@ Flash_Status_t Flash_Write(uint32_t address, uint32_t *data, uint32_t size)
 void Flash_Jump_To_Application(void)
 {
 	const Jump_Application_t* vector_p = (Jump_Application_t*)FLASH_APP1_START_ADDRESS;
-    NVIC_DisableIRQ(UART1_IRQn);
+    NVIC_DisableIRQ(UART0_IRQn);
 	/* let's do The Jump! */
     /* Jump, used asm to avoid stack optimization */
     asm("msr msp, %0; bx %1;" : : "r"(vector_p->stack_addr), "r"(vector_p->func_p));

@@ -10,17 +10,17 @@ void Boot_Uart_Init(void)
 {
 	const usart_serial_options_t uart_serial_options = 
 	{
-		.baudrate = 115200,
+		.baudrate = 230400,
 		.charlength = CONF_UART_CHAR_LENGTH,
 		.paritytype = CONF_UART_PARITY,
 		.stopbits =	CONF_UART_STOP_BITS,
 	};
 
 	/* Configure UART console. */
-	sysclk_enable_peripheral_clock(ID_UART1);
-	stdio_serial_init(UART1, &uart_serial_options);
-	usart_enable_interrupt(UART1, US_IER_RXRDY); // UART RX 인터럽트 활성화
-    NVIC_EnableIRQ(UART1_IRQn); // 전체 인터럽트 활성화
+	sysclk_enable_peripheral_clock(ID_UART0);
+	stdio_serial_init(UART0, &uart_serial_options);
+	usart_enable_interrupt(UART0, US_IER_RXRDY); // UART RX 인터럽트 활성화
+    NVIC_EnableIRQ(UART0_IRQn); // 전체 인터럽트 활성화
 }
 
 /**
@@ -32,7 +32,7 @@ Uart_Status_t Uart_Transmit(uint8_t data)
 {
 	Uart_Status_t status = UART_ERROR;
 
-	if(uart_write(UART1,data) == 0)
+	if(uart_write(UART0,data) == 0)
 	{
 		status = UART_OK;
 	}
@@ -101,12 +101,12 @@ Uart_Status_t Uart_Packet_Receive(uint8_t *data, Uart_Packet_Index_t index)
 	return status;
 }
 
-void UART1_Handler(void)
+void UART0_Handler(void)
 {
 	uint8_t rx_data = 0;
-    if (usart_get_interrupt_mask(UART1) & US_IER_RXRDY) 
+    if (usart_get_interrupt_mask(UART0) & US_IER_RXRDY) 
 	{
-        usart_getchar(UART1,(uint32_t *)&Uart_Rx_Buf[Uart_Buffer_Length]); 
+        usart_getchar(UART0,(uint32_t *)&Uart_Rx_Buf[Uart_Buffer_Length]); 
 		if (Uart_Buffer_Length < 1)
 		{
 			Uart_Packet.header = Uart_Rx_Buf[Uart_Buffer_Length];
