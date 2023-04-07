@@ -132,6 +132,8 @@ src/ASF/common/components/wifi/winc1500/host_drv/bsp/source/nm_bsp_sam4s.d \
  ../src/ASF/sam/drivers/pmc/pmc.h ../src/ASF/common/services/clock/pll.h \
  ../src/ASF/common/services/clock/sam4s/pll.h \
  ../src/ASF/common/services/delay/sam/cycle_counter.h \
+ ../src/ASF/sam/drivers/efc/efc.h \
+ ../src/ASF/sam/services/flash_efc/flash_efc.h \
  ../src/ASF/common/services/gpio/gpio.h \
  ../src/ASF/common/services/gpio/sam_gpio/sam_gpio.h \
  ../src/ASF/sam/drivers/pio/pio.h \
@@ -416,6 +418,10 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 ../src/ASF/common/services/clock/sam4s/pll.h:
 
 ../src/ASF/common/services/delay/sam/cycle_counter.h:
+
+../src/ASF/sam/drivers/efc/efc.h:
+
+../src/ASF/sam/services/flash_efc/flash_efc.h:
 
 ../src/ASF/common/services/gpio/gpio.h:
 

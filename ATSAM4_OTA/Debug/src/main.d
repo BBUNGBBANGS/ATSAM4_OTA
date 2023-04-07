@@ -128,6 +128,8 @@ src/main.d src/main.o: ../src/main.c ../src/main.h \
  ../src/ASF/common/services/clock/pll.h \
  ../src/ASF/common/services/clock/sam4s/pll.h \
  ../src/ASF/common/services/delay/sam/cycle_counter.h \
+ ../src/ASF/sam/drivers/efc/efc.h \
+ ../src/ASF/sam/services/flash_efc/flash_efc.h \
  ../src/ASF/common/services/gpio/gpio.h \
  ../src/ASF/common/services/gpio/sam_gpio/sam_gpio.h \
  ../src/ASF/sam/drivers/pio/pio.h \
@@ -142,7 +144,7 @@ src/main.d src/main.o: ../src/main.c ../src/main.h \
  ../src/ASF/sam/drivers/uart/uart.h ../src/ASF/sam/drivers/usart/usart.h \
  ../src/config/conf_uart_serial.h ../src/ASF/sam/drivers/wdt/wdt.h \
  ../src/ASF/sam/drivers/pio/pio_handler.h ../src/boot_uart.h \
- ../src/xmodem.h
+ ../src/xmodem.h ../src/flash.h
 
 ../src/main.h:
 
@@ -410,6 +412,10 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 
 ../src/ASF/common/services/delay/sam/cycle_counter.h:
 
+../src/ASF/sam/drivers/efc/efc.h:
+
+../src/ASF/sam/services/flash_efc/flash_efc.h:
+
 ../src/ASF/common/services/gpio/gpio.h:
 
 ../src/ASF/common/services/gpio/sam_gpio/sam_gpio.h:
@@ -447,3 +453,5 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 ../src/boot_uart.h:
 
 ../src/xmodem.h:
+
+../src/flash.h:

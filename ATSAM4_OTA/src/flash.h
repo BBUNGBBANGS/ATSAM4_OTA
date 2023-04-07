@@ -1,23 +1,29 @@
-#ifndef FLASH_H_
-#define FLASH_H_
-#if 0
-#include "stm32f1xx_hal.h"
+#ifndef _FLASH_H
+#define _FLASH_H
+
+#include "main.h"
 
 /* Start and end addresses of the user application. */
-#define FLASH_APP_START_ADDRESS ((uint32_t)0x08008000u)
-#define FLASH_APP_END_ADDRESS   ((uint32_t)FLASH_BANK1_END-0x10u) /**< Leave a little extra space at the end. */
-
+#define FLASH_APP1_START_ADDRESS ((uint32_t)0x00406000u)
+#define FLASH_APP2_START_ADDRESS ((uint32_t)0x00413000u)
+#define FLASH_PAGE_SIZE     (512u)
+#define FLASH_COPY_SIZE     (0xD000u)
+typedef void (application_t)(void);
+typedef struct
+{
+    uint32_t stack_addr;     // Stack Pointer
+    application_t *func_p;        // Program Counter
+} Jump_Application_t;
 /* Status report for the functions. */
-typedef enum {
-  FLASH_OK              = 0x00u, /**< The action was successful. */
-  FLASH_ERROR_SIZE      = 0x01u, /**< The binary is too big. */
-  FLASH_ERROR_WRITE     = 0x02u, /**< Writing failed. */
-  FLASH_ERROR_READBACK  = 0x04u, /**< Writing was successful, but the content of the memory is wrong. */
-  FLASH_ERROR           = 0xFFu  /**< Generic error. */
-} flash_status;
+typedef enum 
+{
+    FLASH_OK = 0x00u, /**< The action was successful. */
+    FLASH_ERROR = 0xFFu  /**< Generic error. */
+} Flash_Status_t;
 
-flash_status flash_erase(uint32_t address);
-flash_status flash_write(uint32_t address, uint32_t *data, uint32_t length);
-void flash_jump_to_app(void);
-#endif
+extern Flash_Status_t Flash_Init(void);
+extern Flash_Status_t Flash_Erase(uint32_t address, uint32_t size);
+extern Flash_Status_t Flash_Write(uint32_t address, uint32_t *data, uint32_t size);
+extern void Flash_Jump_To_Application(void);
+extern void Flash_Copy_App2_To_App1(void);
 #endif /* FLASH_H_ */

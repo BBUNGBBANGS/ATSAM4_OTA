@@ -1,36 +1,47 @@
-#include "main.h"
-#include "flash.h"
-#if 0
-/* Function pointer for jumping to user application. */
-typedef void (*fnc_ptr)(void);
+#include "flash.h"  
+#include "boot_uart.h"
+
+Flash_Status_t Flash_Init(void)
+{
+    Flash_Status_t status = FLASH_OK;
+
+    if(flash_init(FLASH_ACCESS_MODE_128, 6) != FLASH_RC_OK)
+    {
+        status = FLASH_ERROR;
+    }
+
+    return status;
+}
 
 /**
  * @brief   This function erases the memory.
  * @param   address: First address to be erased (the last is the end of the flash).
  * @return  status: Report about the success of the erasing.
  */
-flash_status flash_erase(uint32_t address)
+Flash_Status_t Flash_Erase(uint32_t address, uint32_t size)
 {
-  HAL_FLASH_Unlock();
+    Flash_Status_t status = FLASH_OK;
 
-  flash_status status = FLASH_ERROR;
-  FLASH_EraseInitTypeDef erase_init;
-  uint32_t error = 0u;
+    if(flash_unlock(address, address + (FLASH_PAGE_SIZE * size) - 1, 0, 0) != FLASH_RC_OK)
+    {
+        status = FLASH_ERROR;
+    }
 
-  erase_init.TypeErase = FLASH_TYPEERASE_PAGES;
-  erase_init.PageAddress = address;
-  erase_init.Banks = FLASH_BANK_1;
-  /* Calculate the number of pages from "address" and the end of flash. */
-  erase_init.NbPages = (FLASH_BANK1_END - address) / FLASH_PAGE_SIZE;
-  /* Do the actual erasing. */
-  if (HAL_OK == HAL_FLASHEx_Erase(&erase_init, &error))
-  {
-    status = FLASH_OK;
-  }
+    for(uint16_t i = 0; i < size; i++)
+    {
+        if (flash_erase_sector(address + (FLASH_PAGE_SIZE * i)) != FLASH_RC_OK)
+        {
+            status = FLASH_ERROR;
+            break;
+        }
+    }
 
-  HAL_FLASH_Lock();
+    if (flash_lock(address, address + (FLASH_PAGE_SIZE * size) - 1, 0, 0) != FLASH_RC_OK)
+    {
+        status = FLASH_ERROR;
+    }
 
-  return status;
+    return status;
 }
 
 /**
@@ -40,41 +51,26 @@ flash_status flash_erase(uint32_t address)
  * @param   *length: Size of the array.
  * @return  status: Report about the success of the writing.
  */
-flash_status flash_write(uint32_t address, uint32_t *data, uint32_t length)
+Flash_Status_t Flash_Write(uint32_t address, uint32_t *data, uint32_t size)
 {
-  flash_status status = FLASH_OK;
+    Flash_Status_t status = FLASH_OK;
 
-  HAL_FLASH_Unlock();
-
-  /* Loop through the array. */
-  for (uint32_t i = 0u; (i < length) && (FLASH_OK == status); i++)
-  {
-    /* If we reached the end of the memory, then report an error and don't do anything else.*/
-    if (FLASH_APP_END_ADDRESS <= address)
+    if(flash_unlock(address, address + (FLASH_PAGE_SIZE * size) - 1, 0, 0) != FLASH_RC_OK)
     {
-      status |= FLASH_ERROR_SIZE;
+        status = FLASH_ERROR;
     }
-    else
+
+    if (flash_write(address, data, (FLASH_PAGE_SIZE * size), 0) != FLASH_RC_OK)
     {
-      /* The actual flashing. If there is an error, then report it. */
-      if (HAL_OK != HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, address, data[i]))
-      {
-        status |= FLASH_ERROR_WRITE;
-      }
-      /* Read back the content of the memory. If it is wrong, then report an error. */
-      if (((data[i])) != (*(volatile uint32_t*)address))
-      {
-        status |= FLASH_ERROR_READBACK;
-      }
-
-      /* Shift the address by a word. */
-      address += 4u;
+        status = FLASH_ERROR;
     }
-  }
 
-  HAL_FLASH_Lock();
+    if (flash_lock(address, address + (FLASH_PAGE_SIZE * size) - 1, 0, 0) != FLASH_RC_OK)
+    {
+        status = FLASH_ERROR;
+    }
 
-  return status;
+    return status;
 }
 
 /**
@@ -82,15 +78,37 @@ flash_status flash_write(uint32_t address, uint32_t *data, uint32_t length)
  * @param   void
  * @return  void
  */
-void flash_jump_to_app(void)
+void Flash_Jump_To_Application(void)
 {
-  /* Function pointer to the address of the user application. */
-  fnc_ptr jump_to_app;
-  jump_to_app = (fnc_ptr)(*(volatile uint32_t*) (FLASH_APP_START_ADDRESS+4u));
-  HAL_DeInit();
-  /* Change the main stack pointer. */
-  __set_MSP(*(volatile uint32_t*)FLASH_APP_START_ADDRESS);
-  jump_to_app();
+	const Jump_Application_t* vector_p = (Jump_Application_t*)FLASH_APP1_START_ADDRESS;
+    NVIC_DisableIRQ(UART1_IRQn);
+	/* let's do The Jump! */
+    /* Jump, used asm to avoid stack optimization */
+    asm("msr msp, %0; bx %1;" : : "r"(vector_p->stack_addr), "r"(vector_p->func_p));
 }
 
-#endif
+void Flash_Copy_App2_To_App1(void)
+{
+    uint32_t buffer[256];
+    uint32_t app1_address = FLASH_APP1_START_ADDRESS;
+    uint32_t app2_address = FLASH_APP2_START_ADDRESS;
+
+    for (uint32_t page = 0; page < 52; page++) 
+    {
+        // erase page in App1 region
+        Flash_Erase(app1_address, 2);
+        
+        // copy data from App2 to buffer
+        for (uint32_t i = 0; i < 256; i++) 
+        {
+            buffer[i] = ((uint32_t *)app2_address)[i];
+        }
+        
+        // write buffer to App1 page
+        Flash_Write(app1_address, buffer, 2);
+        
+        // update addresses and remaining copy size
+        app1_address += FLASH_PAGE_SIZE * 2;
+        app2_address += FLASH_PAGE_SIZE * 2;
+    }
+}

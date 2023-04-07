@@ -7,11 +7,12 @@
 #include <stdbool.h>
 #include "asf.h"
 
-typedef void (application_t)(void);
-typedef struct
+typedef struct 
 {
-    uint32_t		stack_addr;     // Stack Pointer
-    application_t*	func_p;        // Program Counter
-} Jump_Application_t;
-extern void Jump_To_Application(const uint32_t address);
+    uint8_t Reprogram_Flag;
+    uint8_t dummy1;
+    uint8_t dummy2;
+    uint8_t dummy3;
+}Reprogram_Info_t;
+
 #endif

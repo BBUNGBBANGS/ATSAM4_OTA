@@ -6,6 +6,10 @@
         "usart.h": "c",
         "flash.h": "c",
         "uart.h": "c",
-        "boot_uart.h": "c"
+        "boot_uart.h": "c",
+        "main.h": "c",
+        "stdio.h": "c",
+        "sam4s.h": "c",
+        "stdint.h": "c"
     }
 }

@@ -1,4 +1,4 @@
-src/flash.d src/flash.o: ../src/flash.c ../src/main.h \
+src/flash.d src/flash.o: ../src/flash.c ../src/flash.h ../src/main.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\stdio.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\_ansi.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\newlib.h \
@@ -128,6 +128,8 @@ src/flash.d src/flash.o: ../src/flash.c ../src/main.h \
  ../src/ASF/common/services/clock/pll.h \
  ../src/ASF/common/services/clock/sam4s/pll.h \
  ../src/ASF/common/services/delay/sam/cycle_counter.h \
+ ../src/ASF/sam/drivers/efc/efc.h \
+ ../src/ASF/sam/services/flash_efc/flash_efc.h \
  ../src/ASF/common/services/gpio/gpio.h \
  ../src/ASF/common/services/gpio/sam_gpio/sam_gpio.h \
  ../src/ASF/sam/drivers/pio/pio.h \
@@ -141,7 +143,9 @@ src/flash.d src/flash.o: ../src/flash.c ../src/main.h \
  ../src/ASF/common/services/serial/sam_uart/uart_serial.h \
  ../src/ASF/sam/drivers/uart/uart.h ../src/ASF/sam/drivers/usart/usart.h \
  ../src/config/conf_uart_serial.h ../src/ASF/sam/drivers/wdt/wdt.h \
- ../src/ASF/sam/drivers/pio/pio_handler.h ../src/flash.h
+ ../src/ASF/sam/drivers/pio/pio_handler.h ../src/boot_uart.h
+
+../src/flash.h:
 
 ../src/main.h:
 
@@ -409,6 +413,10 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 
 ../src/ASF/common/services/delay/sam/cycle_counter.h:
 
+../src/ASF/sam/drivers/efc/efc.h:
+
+../src/ASF/sam/services/flash_efc/flash_efc.h:
+
 ../src/ASF/common/services/gpio/gpio.h:
 
 ../src/ASF/common/services/gpio/sam_gpio/sam_gpio.h:
@@ -443,4 +451,4 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 
 ../src/ASF/sam/drivers/pio/pio_handler.h:
 
-../src/flash.h:
+../src/boot_uart.h:

@@ -2,6 +2,10 @@
 # Automatically-generated file. Do not edit or delete the file
 ################################################################################
 
+src\ASF\sam\drivers\efc\efc.c
+
+src\ASF\sam\services\flash_efc\flash_efc.c
+
 src\boot_uart.c
 
 src\xmodem.c

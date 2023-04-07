@@ -1,6 +1,7 @@
 #include "main.h"
 #include "xmodem.h"
 #include "boot_uart.h"
+#include "flash.h"
 
 /* Global variables. */
 static uint8_t xmodem_packet_number = 1u;         /**< Packet number counter. */
@@ -18,6 +19,7 @@ static xmodem_status xmodem_error_handler(uint8_t *error_number, uint8_t max_err
  * @param   void
  * @return  void
  */
+
 void xmodem_receive(void)
 {
     volatile xmodem_status status = X_OK;
@@ -25,7 +27,7 @@ void xmodem_receive(void)
 
     x_first_packet_received = false;
     xmodem_packet_number = 1u;
-    //xmodem_actual_flash_address = FLASH_APP_START_ADDRESS;
+    xmodem_actual_flash_address = FLASH_APP1_START_ADDRESS;
 
     /* Loop until there isn't any error (or until we jump to the user application). */
     while (X_OK == status)
@@ -77,9 +79,10 @@ void xmodem_receive(void)
             case X_EOT:
                 /* ACK, feedback to user (as a text), then jump to user application. */
                 (void)Uart_Transmit(X_ACK);
-                (void)Uart_Transmit_Str((uint8_t*)"\n\rFirmware updated!\r\n");
-                (void)Uart_Transmit_Str((uint8_t*)"Jumping to user application...\r\n");
-                //Jump_To_Application();
+                (void)Uart_Transmit_Str((uint8_t*)"\n\rFirmware Copy Finished!\r\n");
+                delay_ms(100);
+                //Flash_Copy_App2_To_App1();
+                Flash_Jump_To_Application();
             break;
             /* Abort from host. */
             case X_CAN:
@@ -164,11 +167,11 @@ static xmodem_status xmodem_handle_packet(uint8_t header)
     {
         status |= X_ERROR_UART;
     }
-
+    
     /* If it is the first packet, then erase the memory. */
     if ((X_OK == status) && (false == x_first_packet_received))
     {
-        if (1)//(FLASH_OK == flash_erase(FLASH_APP_START_ADDRESS))
+        if (FLASH_OK == Flash_Erase(FLASH_APP1_START_ADDRESS, 2))
         {
             x_first_packet_received = true;
         }
@@ -199,12 +202,12 @@ static xmodem_status xmodem_handle_packet(uint8_t header)
         }
     }
 
-        /* Do the actual flashing (if there weren't any errors). */
-        if (0)//((X_OK == status) && (FLASH_OK != flash_write(xmodem_actual_flash_address, (uint32_t*)&received_packet_data[0u], (uint32_t)size/4u)))
-        {
-            /* Flashing error. */
-            status |= X_ERROR_FLASH;
-        }
+    /* Do the actual flashing (if there weren't any errors). */
+    if ((X_OK == status) && (FLASH_OK != Flash_Write(xmodem_actual_flash_address, (uint32_t*)&received_packet_data[0u], (uint32_t)size/FLASH_PAGE_SIZE)))
+    {
+        /* Flashing error. */
+        status |= X_ERROR_FLASH;
+    }
 
     /* Raise the packet number and the address counters (if there weren't any errors). */
     if (X_OK == status)
