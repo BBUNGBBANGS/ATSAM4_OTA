@@ -26,7 +26,7 @@ Flash_Status_t Flash_Erase(uint32_t address, uint32_t size)
     {
         status = FLASH_ERROR;
     }
-
+    delay_ms(10);
     for(uint16_t i = 0; i < size; i++)
     {
         if (flash_erase_sector(address + (FLASH_PAGE_SIZE * i)) != FLASH_RC_OK)
@@ -35,12 +35,12 @@ Flash_Status_t Flash_Erase(uint32_t address, uint32_t size)
             break;
         }
     }
-
+    delay_ms(10);
     if (flash_lock(address, address + (FLASH_PAGE_SIZE * size) - 1, 0, 0) != FLASH_RC_OK)
     {
         status = FLASH_ERROR;
     }
-
+    delay_ms(10);
     return status;
 }
 
@@ -59,17 +59,17 @@ Flash_Status_t Flash_Write(uint32_t address, uint32_t *data, uint32_t size)
     {
         status = FLASH_ERROR;
     }
-
+    delay_ms(10);
     if (flash_write(address, data, (FLASH_PAGE_SIZE * size), 0) != FLASH_RC_OK)
     {
         status = FLASH_ERROR;
     }
-
+    delay_ms(10);
     if (flash_lock(address, address + (FLASH_PAGE_SIZE * size) - 1, 0, 0) != FLASH_RC_OK)
     {
         status = FLASH_ERROR;
     }
-
+    delay_ms(10);
     return status;
 }
 
@@ -95,9 +95,6 @@ void Flash_Copy_App2_To_App1(void)
 
     for (uint32_t page = 0; page < 52; page++) 
     {
-        // erase page in App1 region
-        Flash_Erase(app1_address, 2);
-        
         // copy data from App2 to buffer
         for (uint32_t i = 0; i < 256; i++) 
         {

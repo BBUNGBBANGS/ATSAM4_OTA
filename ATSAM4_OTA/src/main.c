@@ -27,6 +27,9 @@ int main(void)
 	Uart_Transmit_Str(buf);
 	sprintf((char *)buf,"========================================\r\n");
 	Uart_Transmit_Str(buf);
+	sprintf((char *)buf,"\r\n\r\nErase App2 Flash Section\r\n");
+	Uart_Transmit_Str(buf);
+	Flash_Erase(FLASH_APP2_START_ADDRESS,FLASH_COPY_SIZE/FLASH_PAGE_SIZE);
 	while(1)
 	{
 		sprintf((char *)buf,"Please send a new binary file with Xmodem protocol to update the firmware.\r\n");

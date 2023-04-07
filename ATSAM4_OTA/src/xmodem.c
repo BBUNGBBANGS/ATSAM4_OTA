@@ -27,7 +27,7 @@ void xmodem_receive(void)
 
     x_first_packet_received = false;
     xmodem_packet_number = 1u;
-    xmodem_actual_flash_address = FLASH_APP1_START_ADDRESS;
+    xmodem_actual_flash_address = FLASH_APP2_START_ADDRESS;
 
     /* Loop until there isn't any error (or until we jump to the user application). */
     while (X_OK == status)
@@ -79,9 +79,8 @@ void xmodem_receive(void)
             case X_EOT:
                 /* ACK, feedback to user (as a text), then jump to user application. */
                 (void)Uart_Transmit(X_ACK);
-                (void)Uart_Transmit_Str((uint8_t*)"\n\rFirmware Copy Finished!\r\n");
-                delay_ms(100);
-                //Flash_Copy_App2_To_App1();
+                delay_ms(10);
+                Flash_Copy_App2_To_App1();
                 Flash_Jump_To_Application();
             break;
             /* Abort from host. */
@@ -166,19 +165,6 @@ static xmodem_status xmodem_handle_packet(uint8_t header)
     if (UART_OK != comm_status)
     {
         status |= X_ERROR_UART;
-    }
-    
-    /* If it is the first packet, then erase the memory. */
-    if ((X_OK == status) && (false == x_first_packet_received))
-    {
-        if (FLASH_OK == Flash_Erase(FLASH_APP1_START_ADDRESS, 2))
-        {
-            x_first_packet_received = true;
-        }
-        else
-        {
-            status |= X_ERROR_FLASH;
-        }
     }
 
     /* Error handling and flashing. */
