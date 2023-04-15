@@ -5,9 +5,15 @@ Flash_Status_t Flash_Init(void)
 {
     Flash_Status_t status = FLASH_OK;
 
-    if(flash_init(FLASH_ACCESS_MODE_128, 6) != FLASH_RC_OK)
+    if (FLASH_RC_OK != flash_init(FLASH_ACCESS_MODE_128, 6))
     {
         status = FLASH_ERROR;
+    }
+
+	/* unlock whole flash section */
+	if (FLASH_RC_OK != flash_unlock(0x00400000, 0x00420000 - 1, 0, 0))
+    {
+        status = FLASH_ERROR;        
     }
 
     return status;
@@ -18,29 +24,15 @@ Flash_Status_t Flash_Init(void)
  * @param   address: First address to be erased (the last is the end of the flash).
  * @return  status: Report about the success of the erasing.
  */
-Flash_Status_t Flash_Erase(uint32_t address, uint32_t size)
+Flash_Status_t Flash_Erase(uint32_t address)
 {
     Flash_Status_t status = FLASH_OK;
 
-    if(flash_unlock(address, address + (FLASH_PAGE_SIZE * size) - 1, 0, 0) != FLASH_RC_OK)
+    if (FLASH_RC_OK != flash_erase_page(address, IFLASH_ERASE_PAGES_8))
     {
         status = FLASH_ERROR;
     }
-    delay_ms(10);
-    for(uint16_t i = 0; i < size; i++)
-    {
-        if (flash_erase_sector(address + (FLASH_PAGE_SIZE * i)) != FLASH_RC_OK)
-        {
-            status = FLASH_ERROR;
-            break;
-        }
-    }
-    delay_ms(10);
-    if (flash_lock(address, address + (FLASH_PAGE_SIZE * size) - 1, 0, 0) != FLASH_RC_OK)
-    {
-        status = FLASH_ERROR;
-    }
-    delay_ms(10);
+
     return status;
 }
 
@@ -55,21 +47,11 @@ Flash_Status_t Flash_Write(uint32_t address, uint32_t *data, uint32_t size)
 {
     Flash_Status_t status = FLASH_OK;
 
-    if(flash_unlock(address, address + (FLASH_PAGE_SIZE * size) - 1, 0, 0) != FLASH_RC_OK)
+    if (FLASH_RC_OK != flash_write(address, data, (FLASH_PAGE_SIZE * size), 0))
     {
         status = FLASH_ERROR;
     }
-    delay_ms(10);
-    if (flash_write(address, data, (FLASH_PAGE_SIZE * size), 0) != FLASH_RC_OK)
-    {
-        status = FLASH_ERROR;
-    }
-    delay_ms(10);
-    if (flash_lock(address, address + (FLASH_PAGE_SIZE * size) - 1, 0, 0) != FLASH_RC_OK)
-    {
-        status = FLASH_ERROR;
-    }
-    delay_ms(10);
+
     return status;
 }
 
@@ -89,9 +71,11 @@ void Flash_Jump_To_Application(void)
 
 void Flash_Copy_App2_To_App1(void)
 {
+    uint8_t buf[50] = {0,};
     uint32_t buffer[256];
     uint32_t app1_address = FLASH_APP1_START_ADDRESS;
     uint32_t app2_address = FLASH_APP2_START_ADDRESS;
+    uint8_t percent = 0;
 
     for (uint32_t page = 0; page < 52; page++) 
     {
@@ -100,12 +84,28 @@ void Flash_Copy_App2_To_App1(void)
         {
             buffer[i] = ((uint32_t *)app2_address)[i];
         }
-        
+        // erase App1 page
+        if (0 == (page % 4))
+        {
+            Flash_Erase(app1_address);
+        }
         // write buffer to App1 page
         Flash_Write(app1_address, buffer, 2);
         
         // update addresses and remaining copy size
         app1_address += FLASH_PAGE_SIZE * 2;
         app2_address += FLASH_PAGE_SIZE * 2;
+        
+        if (percent <= 100)
+        {
+            sprintf((char *)buf,"Firmware Copy : %d%% \r\n",percent);
+            Uart_Transmit_Str(buf);
+        }
+        else
+        {
+            sprintf((char *)buf,"Firmware Update Finished.\r\n");
+            Uart_Transmit_Str(buf);            
+        }
+        percent += 2;
     }
 }

@@ -77,11 +77,18 @@ void xmodem_receive(void)
             break;
             /* End of Transmission. */
             case X_EOT:
+            {
+                uint8_t buf[100] = {0,};
                 /* ACK, feedback to user (as a text), then jump to user application. */
-                (void)Uart_Transmit(X_ACK);
-                delay_ms(10);
+                (void)Uart_Transmit(X_ACK);	
+				delay_ms(10);
+                sprintf((char *)buf,"\r\n\r\nFirmware download completed.\r\n");
+		        Uart_Transmit_Str(buf);
+                sprintf((char *)buf,"Please wait, copying application software.\r\n");
+		        Uart_Transmit_Str(buf);
                 Flash_Copy_App2_To_App1();
-                Flash_Jump_To_Application();
+				NVIC_SystemReset();         
+            }
             break;
             /* Abort from host. */
             case X_CAN:
@@ -186,6 +193,11 @@ static xmodem_status xmodem_handle_packet(uint8_t header)
             /* The calculated and received CRC are different. */
             status |= X_ERROR_CRC;
         }
+    }
+
+    if (1 == (xmodem_packet_number % 4))
+    {
+        Flash_Erase(xmodem_actual_flash_address);
     }
 
     /* Do the actual flashing (if there weren't any errors). */
